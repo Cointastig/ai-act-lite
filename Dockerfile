@@ -15,11 +15,11 @@ COPY backend ./backend
 FROM python:3.11-slim
 WORKDIR /app
 
-# 1. Code kopieren
+# 1️⃣ Code & assets
 COPY --from=backend /app/backend /app/backend
 COPY --from=frontend /app/frontend/.next/standalone /app/frontend
 
-# 2.  **Virtualenv** aus dem Builder übernehmen ⬇
+# 2️⃣ → bring Poetry virtualenv with all deps
 COPY --from=backend /root/.cache/pypoetry/virtualenvs /venv
 ENV PATH="/venv/bin:$PATH"
 
