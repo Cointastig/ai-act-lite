@@ -1,27 +1,35 @@
-# === 1. Build Frontend ===
+# === 1. Build Frontend ===
 FROM node:20-alpine AS frontend
 WORKDIR /app
 COPY frontend ./frontend
 RUN cd frontend && npm install && npm run build
 
-# === 2. Build & Runtime Backend ===
+# === 2. Build & Runtime Backend ===
 FROM python:3.11-slim AS runtime
 WORKDIR /app
 
-# 2-a | Abhängigkeiten in _dieses_ Image installieren
+# -- A. Install system libs needed by WeasyPrint (cairo, pango, gobject) --
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      libcairo2 \
+      libpango-1.0-0 \
+      libpangocairo-1.0-0 \
+      libgdk-pixbuf-2.0-0 \
+      libffi-dev \
+      shared-mime-info && \
+    rm -rf /var/lib/apt/lists/*
+
+# -- B. Install Poetry & backend deps directly into this image --
 COPY backend/pyproject.toml backend/poetry.lock* ./backend/
-RUN pip install poetry \
- && cd backend \
- && poetry install --without dev --no-root
+RUN pip install poetry && \
+    cd backend && poetry install --without dev --no-root
 
-# 2-b | Backend-Code kopieren
+# -- C. Copy backend source & Next.js output --
 COPY backend ./backend
-
-# 2-c | Next.js-Output übernehmen
 COPY --from=frontend /app/frontend/.next/standalone /app/frontend
 
-# 2-d | **Direkt ins Backend-Verzeichnis wechseln**
+# -- D. Start inside backend dir so poetry sees pyproject.toml --
 WORKDIR /app/backend
 
-# 2-e | Start-Befehl – „poetry run“ findet hier die pyproject.toml
+ENV PORT=8000
 ENTRYPOINT ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
