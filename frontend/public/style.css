@@ -15,21 +15,36 @@
 body{margin:0;background:var(--gray-50);color:var(--gray-700);-webkit-font-smoothing:antialiased}
 
 /* ---------- Utility-Klassen ---------- */
-.flex{display:flex}.items-center{align-items:center}.justify-center{justify-content:center}
+.flex{display:flex}
+.flex-col{flex-direction:column}      /* NEU – Spaltenausrichtung */
+.flex-wrap{flex-wrap:wrap}
+.items-center{align-items:center}
+.justify-center{justify-content:center}
+
 .min-h-screen{min-height:100vh}
-.p-6{padding:1.5rem}.p-8{padding:2rem}.px-6{padding-inline:1.5rem}.py-3{padding-block:.75rem}
+.p-6{padding:1.5rem}.p-8{padding:2rem}
+.px-6{padding-inline:1.5rem}.py-3{padding-block:.75rem}
 .px-4{padding-inline:1rem}.py-2{padding-block:.5rem}
 .mt-1{margin-top:.25rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}
 .gap-4{gap:1rem}
+
 .rounded{border-radius:.25rem}.rounded-2xl{border-radius:1rem}
 .shadow-xl{box-shadow:var(--shadow-xl)}
 .max-w-xl{max-width:36rem}
+
 .font-bold{font-weight:700}.font-medium{font-weight:500}
-.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}
+.text-3xl{font-size:1.875rem;line-height:2.25rem}
+.text-xl{font-size:1.25rem;line-height:1.75rem}
 .text-sm{font-size:.875rem;line-height:1.25rem}
-.text-white{color:var(--white)}.text-gray-700{color:var(--gray-700)}
-.bg-white{background:var(--white)}.bg-gray-50{background:var(--gray-50)}
-.bg-brand-400{background:var(--brand-400)}.hover\:bg-brand-500:hover{background:var(--brand-500)}
+
+.text-white{color:var(--white)}
+.text-gray-700{color:var(--gray-700)}
+
+.bg-white{background:var(--white)}
+.bg-gray-50{background:var(--gray-50)}
+.bg-brand-400{background:var(--brand-400)}
+.hover\:bg-brand-500:hover{background:var(--brand-500)}
+
 .border{border:1px solid var(--gray-300)}
 .disabled\:opacity-50:disabled{opacity:.5}
 
@@ -38,7 +53,7 @@ input[type=text],input[type=email]{
   border:1px solid var(--gray-300);
   border-radius:.25rem;
   padding:.5rem .75rem;
-  width:100%
+  width:100%;
 }
 input[type=checkbox]{
   height:1rem;width:1rem;
@@ -47,7 +62,8 @@ input[type=checkbox]{
   vertical-align:middle;
   cursor:pointer;
 }
-label{cursor:pointer}label:hover{color:var(--brand-500)}
+label{cursor:pointer}
+label:hover{color:var(--brand-500)}
 
 /* ---------- Buttons ---------- */
 .btn{
@@ -62,7 +78,7 @@ label{cursor:pointer}label:hover{color:var(--brand-500)}
 }
 .btn:hover{background:var(--brand-500)}
 
-/* ---------- Badges (Ampel) ---------- */
+/* ---------- Ampel-Badges ---------- */
 .badge{
   display:inline-flex;
   align-items:center;
@@ -86,6 +102,7 @@ header{background:var(--brand-400)}
 }
 .section{padding-block:4rem}
 .section-narrow{max-width:48rem;margin-inline:auto}
+
 .footer{
   background:var(--gray-100);
   text-align:center;
@@ -94,6 +111,7 @@ header{background:var(--brand-400)}
 }
 .footer a{color:var(--brand-400);text-decoration:none}
 .footer a:hover{color:var(--brand-500);text-decoration:underline}
+
 .result-box{
   border:1px solid var(--gray-300);
   background:var(--gray-50);
