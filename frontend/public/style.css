@@ -99,6 +99,7 @@ header{background:var(--brand-400)}
   border-radius:1rem;
   box-shadow:var(--shadow-xl);
   padding:2rem;
+  margin:2rem auto;          /* <<< zentriert & etwas Außenabstand */
 }
 .section{padding-block:4rem}
 .section-narrow{max-width:48rem;margin-inline:auto}
