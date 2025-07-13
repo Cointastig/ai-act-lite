@@ -18,13 +18,13 @@ export default function MyApp({
   Component,
   pageProps,
 }: AppProps<{ initialSession: Session }>) {
-  // 1️⃣ Supabase-Client erst im Browser erzeugen:
+  // Supabase-Client erst im Browser erzeugen
   const [supabaseClient, setSupabaseClient] = useState<any>(null);
   useEffect(() => {
     setSupabaseClient(createPagesBrowserClient());
   }, []);
 
-  // 2️⃣ Bis dahin nichts rendern:
+  // Bis dahin nichts rendern
   if (!supabaseClient) {
     return null;
   }
@@ -52,7 +52,7 @@ export default function MyApp({
         <AuthStatus />
       </header>
 
-      {/* PAGE */}
+      {/* PAGE CONTENT */}
       <Component {...pageProps} />
 
       {/* FOOTER */}
@@ -70,25 +70,31 @@ export default function MyApp({
   );
 }
 
-// ——— kleines Login/Logout-UI im Header ———
+// ——— kleines Login/Logout-UI (inkl. Dashboard-Link) ———
 function AuthStatus() {
   const { session, supabaseClient } = useStateContext();
+
   if (!session) {
     return <Link href="/login" className="text-white">Login</Link>;
   }
+
   return (
-    <button
-      className="text-white text-sm"
-      onClick={() => supabaseClient.auth.signOut()}
-    >
-      Logout ({session.user.email})
-    </button>
+    <div className="flex items-center gap-4">
+      <Link href="/dashboard" className="text-white">
+        Dashboard
+      </Link>
+      <button
+        className="text-white text-sm"
+        onClick={() => supabaseClient.auth.signOut()}
+      >
+        Logout ({session.user.email})
+      </button>
+    </div>
   );
 }
 
-// Helfer: useSessionContext via Proxy
+// Helfer: useSessionContext via dynamischen Import (vermeidet Server-Build-Errors)
 function useStateContext() {
-  // workaround: import hook inside component to avoid server-run
   const { useSessionContext } = require("@supabase/auth-helpers-react");
   return useSessionContext();
 }
