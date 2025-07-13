@@ -1,8 +1,9 @@
+# backend/app/pdf.py
+
 from fastapi import APIRouter, Body
 from fastapi.responses import Response
 from jinja2 import Environment, PackageLoader, select_autoescape
 from weasyprint import HTML
-import io
 
 router = APIRouter()
 
@@ -15,9 +16,8 @@ env = Environment(
 async def generate_pdf(
     company_name: str = Body(...),
     risk_class: str = Body(...),
-    required_actions: list[str] = Body(default=[])
+    required_actions: list[str] = Body(..., embed=True)
 ):
-    """Wandelt die Ergebnis-Daten in einen sehr einfachen Annex-IV-Dummy-Report."""
     tpl = env.get_template("report.html")
     html = tpl.render(
         company=company_name,
