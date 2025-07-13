@@ -1,4 +1,7 @@
+'use client';
+
 import { useState } from "react";
+import { useSupabaseClient, useSessionContext } from "@supabase/auth-helpers-react";
 
 type Result = {
   risk_class: "minimal" | "medium" | "high";
@@ -19,7 +22,10 @@ const questions = [
 ];
 
 export default function RiskWizardForm() {
-  const [answers, setAnswers] = useState<boolean[]>(Array(10).fill(false));
+  const supabase = useSupabaseClient();
+  const { session } = useSessionContext();
+
+  const [answers, setAnswers] = useState<boolean[]>(Array(questions.length).fill(false));
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,29 +40,42 @@ export default function RiskWizardForm() {
   const submit = async () => {
     setLoading(true);
     setResult(null);
+
     try {
-      const res = await fetch(
-        "https://ai-act-lite-api.onrender.com/api/risk-wizard",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            answers,
-            company_name: company,
-            contact_email: email,
-          }),
-        }
-      );
+      // 1) Anfrage an dein Backend
+      const res = await fetch("https://ai-act-lite-api.onrender.com/api/risk-wizard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          answers,
+          company_name: company,
+          contact_email: email,
+        }),
+      });
       const json: Result = await res.json();
       setResult(json);
+
+      // 2) Report in Supabase speichern
+      if (session) {
+        await supabase
+          .from("risk_reports")
+          .insert({
+            user_id: session.user.id,
+            company_name: company,
+            answers,
+            risk_class: json.risk_class,
+            required_actions: json.required_actions,
+          });
+      }
     } catch (e) {
+      console.error(e);
       alert("Fehler bei der Anfrage");
     } finally {
       setLoading(false);
     }
   };
 
-  const badge =
+  const badgeClass =
     result?.risk_class === "high"
       ? "badge badge-red"
       : result?.risk_class === "medium"
@@ -104,14 +123,14 @@ export default function RiskWizardForm() {
         disabled={loading}
         onClick={submit}
       >
-        {loading ? "Überprüfung…" : "Risiko prüfen"}
+        {loading ? "Überprüfung …" : "Risiko prüfen"}
       </button>
 
       {/* Ergebnis */}
       {result && (
         <div className="result-box mt-6">
           <p className="mb-2 flex items-center gap-2">
-            <span className={badge}>{result.risk_class}</span>
+            <span className={badgeClass}>{result.risk_class}</span>
             Risikoklasse&nbsp;<b>{result.risk_class}</b>
           </p>
           <ul className="list-disc pl-5 text-sm">
