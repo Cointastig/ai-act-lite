@@ -1,98 +1,141 @@
 import { useState } from "react";
 
+type RiskResult = {
+  risk_class: "minimal" | "medium" | "high";
+  required_actions: string[];
+};
+
 const questions = [
-  "Does your AI system interact directly with children?",
-  "Is biometric identification used?",
-  "Does it influence voters in political campaigns?",
-  "Is it employed in workplace HR decisions?",
-  "Does it evaluate creditworthiness or insurance risk?",
-  "Does the system generate images/text that could be mistaken as authentic?",
-  "Do you allow third‑party integrations with no human oversight?",
-  "Could wrong recommendations endanger safety?",
-  "Is personal data processed without consent?",
-  "Is the training data fully under your control?",
+  "Interagiert Ihr KI-System direkt mit Kindern?",
+  "Wird eine biometrische Identifizierung verwendet?",
+  "Beeinflusst das System Wähler in politischen Kampagnen?",
+  "Wird es bei Personalentscheidungen im Unternehmen eingesetzt?",
+  "Bewertet es Kreditwürdigkeit oder Versicherungsrisiko?",
+  "Erzeugt das System Bilder/Texte, die als echt missverstanden werden könnten?",
+  "Erlauben Sie Integrationen von Drittanbietern ohne menschliche Aufsicht?",
+  "Könnten falsche Empfehlungen die Sicherheit gefährden?",
+  "Werden personenbezogene Daten ohne Einwilligung verarbeitet?",
+  "Haben Sie die Trainingsdaten vollständig unter Kontrolle?",
 ];
 
 export default function RiskWizardForm() {
-  const [answers, setAnswers] = useState<boolean[]>(Array(10).fill(false));
+  const [answers, setAnswers] = useState<boolean[]>(
+    Array(questions.length).fill(false)
+  );
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
-  const [result, setResult] = useState<{ risk_class: string; required_actions: string[] } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<RiskResult | null>(null);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "";
+  const apiBase =
+    (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "") ||
+    "https://ai-act-lite-api.onrender.com/api";
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setResult(null);
+
     const res = await fetch(`${apiBase}/risk-wizard`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers, company_name: company, contact_email: email }),
+      body: JSON.stringify({
+        answers,
+        company_name: company,
+        contact_email: email,
+      }),
     });
-    const data = await res.json();
+
+    if (!res.ok) {
+      alert(`API-Fehler ${res.status}`);
+      setLoading(false);
+      return;
+    }
+
+    const data: RiskResult = await res.json();
     setResult(data);
     setLoading(false);
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-4">
-        {questions.map((q, i) => (
-          <label key={i} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              className="h-4 w-4"
-              checked={answers[i]}
-              onChange={() => {
-                const copy = [...answers];
-                copy[i] = !copy[i];
-                setAnswers(copy);
-              }}
-            />
-            {q}
-          </label>
-        ))}
-      </div>
+      {questions.map((q, i) => (
+        <label key={i} className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4 rounded border-gray-300"
+            checked={answers[i]}
+            onChange={(e) => {
+              const next = [...answers];
+              next[i] = e.target.checked;
+              setAnswers(next);
+            }}
+          />
+          {q}
+        </label>
+      ))}
 
-      <input
-        type="text"
-        placeholder="Company name"
-        value={company}
-        onChange={(e) => setCompany(e.target.value)}
-        className="w-full rounded border p-2"
-        required
-      />
-      <input
-        type="email"
-        placeholder="Contact e‑mail"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full rounded border p-2"
-        required
-      />
+      <div className="flex flex-col gap-2">
+        <input
+          type="text"
+          placeholder="Firmenname"
+          className="rounded border px-3 py-2"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+          required
+        />
+        <input
+          type="email"
+          placeholder="Kontakt-E-Mail"
+          className="rounded border px-3 py-2"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
 
       <button
         type="submit"
         disabled={loading}
         className="w-full rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
       >
-        {loading ? "Checking…" : "Check risk"}
+        {loading ? "Überprüfung…" : "Risiko prüfen"}
       </button>
 
       {result && (
-        <div className="rounded-xl border p-4 shadow-sm">
+        <div className="rounded border border-gray-200 bg-gray-50 p-4">
           <p className="mb-2 text-lg font-semibold">
-            Risk class: <span className={result.risk_class === "minimal" ? "text-green-600" : result.risk_class === "medium" ? "text-yellow-600" : "text-red-600"}>{result.risk_class}</span>
+            Risikoklasse:{" "}
+            <span
+              className={
+                result.risk_class === "minimal"
+                  ? "text-green-600"
+                  : result.risk_class === "medium"
+                  ? "text-yellow-600"
+                  : "text-red-600"
+              }
+            >
+              {result.risk_class === "minimal"
+                ? "minimal"
+                : result.risk_class === "medium"
+                ? "mittel"
+                : "hoch"}
+            </span>
           </p>
+
           {result.required_actions.length > 0 ? (
-            <ul className="list-disc pl-5 text-sm text-gray-700">
-              {result.required_actions.map((a, i) => (
-                <li key={i}>{a}</li>
-              ))}
-            </ul>
+            <>
+              <p className="text-sm font-medium">Nächste Schritte:</p>
+              <ul className="list-disc pl-5 text-sm text-gray-700">
+                {result.required_actions.map((a, i) => (
+                  <li key={i}>{a}</li>
+                ))}
+              </ul>
+            </>
           ) : (
-            <p className="text-sm text-gray-600">No immediate actions required.</p>
+            <p className="text-sm text-gray-600">
+              Keine sofortigen Maßnahmen erforderlich.
+            </p>
           )}
         </div>
       )}
