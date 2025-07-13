@@ -1,33 +1,67 @@
+// frontend/src/pages/_app.tsx
+
+import { useState, useEffect } from "react";
 import type { AppProps } from "next/app";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { supabase } from "../lib/supabaseClient";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 
+import {
+  SessionContextProvider,
+  Session,
+} from "@supabase/auth-helpers-react";
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
+
 import "../../public/style.css";
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+export default function MyApp({
+  Component,
+  pageProps,
+}: AppProps<{ initialSession: Session }>) {
+  // 1️⃣ Supabase-Client erst im Browser erzeugen:
+  const [supabaseClient, setSupabaseClient] = useState<any>(null);
+  useEffect(() => {
+    setSupabaseClient(createPagesBrowserClient());
+  }, []);
+
+  // 2️⃣ Bis dahin nichts rendern:
+  if (!supabaseClient) {
+    return null;
+  }
+
   return (
-    <SessionContextProvider supabaseClient={supabase}>
+    <SessionContextProvider
+      supabaseClient={supabaseClient}
+      initialSession={pageProps.initialSession}
+    >
       <Head>
         <title>AI-Act Lite</title>
       </Head>
 
+      {/* HEADER */}
       <header className="px-6 py-3 bg-brand-400 flex items-center justify-between">
         <Link href="/" className="inline-block">
-          <Image src="/logo.png" alt="AI-Act Lite" width={140} height={32} priority />
+          <Image
+            src="/logo.png"
+            alt="AI-Act Lite"
+            width={140}
+            height={32}
+            priority
+          />
         </Link>
         <AuthStatus />
       </header>
 
+      {/* PAGE */}
       <Component {...pageProps} />
 
+      {/* FOOTER */}
       <footer className="footer">
-        Mehr zum Gesetz&nbsp;
+        Mehr zum Gesetz{" "}
         <a
           href="https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX%3A52021PC0206"
-          target="_blank" rel="noopener noreferrer"
+          target="_blank"
+          rel="noopener noreferrer"
         >
           EU AI Act (Entwurfsfassung)
         </a>
@@ -36,19 +70,25 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-/* ---------- Kleiner Status-/Logout-Button ---------- */
-import { useSessionContext } from "@supabase/auth-helpers-react";
+// ——— kleines Login/Logout-UI im Header ———
 function AuthStatus() {
-  const { session, supabaseClient } = useSessionContext();
-
-  if (!session) return <Link href="/login" className="text-white">Login</Link>;
-
+  const { session, supabaseClient } = useStateContext();
+  if (!session) {
+    return <Link href="/login" className="text-white">Login</Link>;
+  }
   return (
     <button
-      onClick={() => supabaseClient.auth.signOut()}
       className="text-white text-sm"
+      onClick={() => supabaseClient.auth.signOut()}
     >
-      Logout&nbsp;({session.user.email})
+      Logout ({session.user.email})
     </button>
   );
+}
+
+// Helfer: useSessionContext via Proxy
+function useStateContext() {
+  // workaround: import hook inside component to avoid server-run
+  const { useSessionContext } = require("@supabase/auth-helpers-react");
+  return useSessionContext();
 }
