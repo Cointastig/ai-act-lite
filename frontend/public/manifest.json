@@ -1,0 +1,11 @@
+{
+  "name": "AI-Act Lite",
+  "short_name": "AI-Act",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "32x32", "type": "image/x-icon" }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#46cce5",
+  "background_color": "#ffffff"
+}
