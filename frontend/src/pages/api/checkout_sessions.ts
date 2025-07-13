@@ -1,4 +1,3 @@
-// frontend/pages/api/checkout_sessions.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getUser } from "@supabase/auth-helpers-nextjs";
 import Stripe from "stripe";
