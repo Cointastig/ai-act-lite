@@ -1,8 +1,7 @@
-// frontend/src/pages/dashboard/[id].tsx
 'use client';
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";                     // ← geändert
+import { useRouter } from "next/router";
 import {
   useSupabaseClient,
   useSessionContext,
@@ -19,7 +18,7 @@ type ReportFull = {
 
 export default function ReportDetail() {
   const router = useRouter();
-  const { id } = router.query as { id?: string };           // ← hier kommt die ID her
+  const { id } = router.query as { id?: string };
   const supabase = useSupabaseClient();
   const { session, isLoading } = useSessionContext();
 
@@ -27,7 +26,7 @@ export default function ReportDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!router.isReady) return;                            // warte auf query
+    if (!router.isReady) return;
     if (!session && !isLoading) {
       router.replace("/login");
       return;
@@ -39,11 +38,8 @@ export default function ReportDetail() {
         .eq("id", id)
         .maybeSingle()
         .then(({ data }) => {
-          if (!data) {
-            router.replace("/dashboard");
-          } else {
-            setReport(data);
-          }
+          if (!data) router.replace("/dashboard");
+          else setReport(data);
           setLoading(false);
         });
     }
@@ -52,6 +48,9 @@ export default function ReportDetail() {
   if (loading || !report) {
     return <p className="p-6">Lade…</p>;
   }
+
+  // Hier verwenden wir die Backend-URL aus der ENV
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   return (
     <main className="p-6">
@@ -92,7 +91,7 @@ export default function ReportDetail() {
 
       <p className="mt-6 flex gap-4">
         <a
-          href={`/api/risk-wizard/pdf?id=${report.id}`}
+          href={`${apiUrl}/api/risk-wizard/pdf?id=${report.id}`}
           className="btn"
         >
           PDF herunterladen
