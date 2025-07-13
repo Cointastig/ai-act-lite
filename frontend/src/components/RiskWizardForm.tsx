@@ -27,6 +27,7 @@ export default function RiskWizardForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RiskResult | null>(null);
 
+  // Basis-URL aus .env oder Fallback
   const apiBase =
     (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "") ||
     "https://ai-act-lite-api.onrender.com/api";
@@ -57,8 +58,10 @@ export default function RiskWizardForm() {
     setLoading(false);
   }
 
+  // === UI ===
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Checkbox-Fragen */}
       {questions.map((q, i) => (
         <label key={i} className="flex items-start gap-2 text-sm">
           <input
@@ -75,6 +78,7 @@ export default function RiskWizardForm() {
         </label>
       ))}
 
+      {/* Firmendaten */}
       <div className="flex flex-col gap-2">
         <input
           type="text"
@@ -94,6 +98,7 @@ export default function RiskWizardForm() {
         />
       </div>
 
+      {/* Submit-Button */}
       <button
         type="submit"
         disabled={loading}
@@ -102,6 +107,7 @@ export default function RiskWizardForm() {
         {loading ? "Überprüfung…" : "Risiko prüfen"}
       </button>
 
+      {/* Ergebnisbox & PDF-Button */}
       {result && (
         <div className="rounded border border-gray-200 bg-gray-50 p-4">
           <p className="mb-2 text-lg font-semibold">
@@ -137,6 +143,32 @@ export default function RiskWizardForm() {
               Keine sofortigen Maßnahmen erforderlich.
             </p>
           )}
+
+          {/* PDF-Download */}
+          <button
+            type="button"
+            onClick={async () => {
+              const res = await fetch(`${apiBase}/pdf`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  company_name: company,
+                  risk_class: result.risk_class,
+                  required_actions: result.required_actions,
+                }),
+              });
+              const blob = await res.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "Annex-IV-Report.pdf";
+              a.click();
+              window.URL.revokeObjectURL(url);
+            }}
+            className="mt-4 w-full rounded border border-blue-600 px-4 py-2 text-blue-600 hover:bg-blue-50"
+          >
+            PDF herunterladen
+          </button>
         </div>
       )}
     </form>
