@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-type RiskResult = {
+type Result = {
   risk_class: "minimal" | "medium" | "high";
   required_actions: string[];
 };
@@ -8,169 +8,120 @@ type RiskResult = {
 const questions = [
   "Interagiert Ihr KI-System direkt mit Kindern?",
   "Wird eine biometrische Identifizierung verwendet?",
-  "Beeinflusst das System Wähler in politischen Kampagnen?",
-  "Wird es bei Personalentscheidungen im Unternehmen eingesetzt?",
-  "Bewertet es Kreditwürdigkeit oder Versicherungsrisiko?",
-  "Erzeugt das System Bilder/Texte, die als echt missverstanden werden könnten?",
-  "Erlauben Sie Integrationen von Drittanbietern ohne menschliche Aufsicht?",
-  "Könnten falsche Empfehlungen die Sicherheit gefährden?",
+  "Beeinflusst es die Wähler im politischen Wahlkampf?",
+  "Wird es bei Personalentscheidungen am Arbeitsplatz berücksichtigt?",
+  "Wird die Kreditwürdigkeit oder das Versicherungsrisiko bewertet?",
+  "Erzeugt das System Bilder/Texte, die fälschlicherweise für authentisch gehalten werden könnten?",
+  "Erlauben Sie die Integration von Drittanbietern ohne menschliche Aufsicht?",
+  "Können falsche Empfehlungen die Sicherheit gefährden?",
   "Werden personenbezogene Daten ohne Einwilligung verarbeitet?",
   "Haben Sie die Trainingsdaten vollständig unter Kontrolle?",
 ];
 
 export default function RiskWizardForm() {
-  const [answers, setAnswers] = useState<boolean[]>(
-    Array(questions.length).fill(false)
-  );
+  const [answers, setAnswers] = useState<boolean[]>(Array(10).fill(false));
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<RiskResult | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
 
-  const apiBase =
-    (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "") ||
-    "https://ai-act-lite-api.onrender.com/api";
+  const handleToggle = (idx: number) => {
+    const next = [...answers];
+    next[idx] = !next[idx];
+    setAnswers(next);
+  };
 
-  /* ── Prüfung ──────────────────────────────────────────────── */
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const submit = async () => {
     setLoading(true);
     setResult(null);
-
-    const res = await fetch(`${apiBase}/risk-wizard`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        answers,
-        company_name: company,
-        contact_email: email,
-      }),
-    });
-
-    if (!res.ok) {
-      alert(`API-Fehler ${res.status}`);
+    try {
+      const res = await fetch("/api/risk-wizard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          answers,
+          company_name: company,
+          contact_email: email,
+        }),
+      });
+      const json: Result = await res.json();
+      setResult(json);
+    } catch (e) {
+      alert("Fehler bei der Anfrage");
+    } finally {
       setLoading(false);
-      return;
     }
+  };
 
-    const data: RiskResult = await res.json();
-    setResult(data);
-    setLoading(false);
-  }
+  /* Farbe für Ampel-Badge wählen */
+  const badgeClass =
+    result?.risk_class === "high"
+      ? "badge badge-red"
+      : result?.risk_class === "medium"
+      ? "badge badge-yellow"
+      : "badge badge-green";
 
-  /* ── UI ────────────────────────────────────────────────────── */
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Checkbox-Fragen */}
-      {questions.map((q, i) => (
-        <label key={i} className="flex items-start gap-2 text-sm">
-          <input
-            type="checkbox"
-            className="mt-1 h-4 w-4 rounded border-gray-300"
-            checked={answers[i]}
-            onChange={(e) => {
-              const next = [...answers];
-              next[i] = e.target.checked;
-              setAnswers(next);
-            }}
-          />
-          {q}
-        </label>
-      ))}
+    <div className="container max-w-xl">
+      <h1 className="mb-4 text-3xl font-bold">AI-Act Risikoassistent</h1>
+
+      {/* Fragen */}
+      <div className="flex flex-col gap-4 mb-6">
+        {questions.map((q, i) => (
+          <label key={i} className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={answers[i]}
+              onChange={() => handleToggle(i)}
+            />
+            {q}
+          </label>
+        ))}
+      </div>
 
       {/* Firmendaten */}
-      <div className="flex flex-col gap-2">
+      <div className="mb-4">
+        <label className="text-sm">Unternehmens­name</label>
         <input
           type="text"
-          placeholder="Firmenname"
-          className="rounded border px-3 py-2"
+          className="mt-1 w-full"
           value={company}
           onChange={(e) => setCompany(e.target.value)}
-          required
         />
+      </div>
+      <div className="mb-6">
+        <label className="text-sm">Kontakt-E-Mail</label>
         <input
           type="email"
-          placeholder="Kontakt-E-Mail"
-          className="rounded border px-3 py-2"
+          className="mt-1 w-full"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
       </div>
 
       {/* Submit */}
       <button
-        type="submit"
+        className="btn w-full disabled:opacity-50"
+        onClick={submit}
         disabled={loading}
-        className="w-full rounded bg-brand-400 px-4 py-2 font-medium text-white hover:bg-brand-500 disabled:opacity-50"
       >
         {loading ? "Überprüfung…" : "Risiko prüfen"}
       </button>
 
-      {/* Ergebnis & PDF */}
+      {/* Ergebnis */}
       {result && (
-        <div className="rounded border border-gray-200 bg-gray-50 p-4">
-          <p className="mb-2 text-lg font-semibold">
-            Risikoklasse:{" "}
-            <span
-              className={
-                result.risk_class === "minimal"
-                  ? "text-green-600"
-                  : result.risk_class === "medium"
-                  ? "text-yellow-600"
-                  : "text-red-600"
-              }
-            >
-              {result.risk_class === "minimal"
-                ? "minimal"
-                : result.risk_class === "medium"
-                ? "mittel"
-                : "hoch"}
-            </span>
+        <div className="result-box mt-6">
+          <p className="mb-2 flex items-center gap-2">
+            <span className={badgeClass}>{result.risk_class}</span>
+            Risikoklasse&nbsp;<b>{result.risk_class}</b>
           </p>
-
-          {result.required_actions.length > 0 ? (
-            <>
-              <p className="text-sm font-medium">Nächste Schritte:</p>
-              <ul className="list-disc pl-5 text-sm text-gray-700">
-                {result.required_actions.map((a, i) => (
-                  <li key={i}>{a}</li>
-                ))}
-              </ul>
-            </>
-          ) : (
-            <p className="text-sm text-gray-600">
-              Keine sofortigen Maßnahmen erforderlich.
-            </p>
-          )}
-
-          {/* PDF-Download */}
-          <button
-            type="button"
-            onClick={async () => {
-              const res = await fetch(`${apiBase}/pdf`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  company_name: company,
-                  risk_class: result.risk_class,
-                  required_actions: result.required_actions,
-                }),
-              });
-              const blob = await res.blob();
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "Annex-IV-Report.pdf";
-              a.click();
-              window.URL.revokeObjectURL(url);
-            }}
-            className="mt-4 w-full rounded border border-brand-400 px-4 py-2 text-brand-400 hover:bg-brand-50"
-          >
-            PDF herunterladen
-          </button>
+          <ul className="list-disc pl-5 text-sm">
+            {result.required_actions.map((a) => (
+              <li key={a}>{a}</li>
+            ))}
+          </ul>
         </div>
       )}
-    </form>
+    </div>
   );
 }
