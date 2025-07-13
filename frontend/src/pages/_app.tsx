@@ -3,30 +3,25 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 
-import "../styles/globals.css";          // bindet das lokal gebaute Tailwind-CSS ein
-
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
-      {/* Manifest – kann bleiben, verursacht keinen 404 mehr */}
       <Head>
+        {/* PWA-Manifest, falls benötigt */}
         <link rel="manifest" href="/manifest.json" />
+        {/* ► einziges Stylesheet: fest eingecheckte style.css */}
+        <link rel="stylesheet" href="/style.css" />
+        <title>AI-Act Lite</title>
       </Head>
 
-      {/* Brand-Header mit Logo */}
-      <header className="bg-brand-400 px-6 py-3">
+      {/* einfacher Brand-Header */}
+      <header className="px-6 py-3">
         <Link href="/" className="inline-block">
-          <Image
-            src="/logo.png"
-            alt="AI-Act Lite"
-            width={140}
-            height={32}
-            priority
-          />
+          {/* falls Next/Image zickt, durch <img> ersetzen */}
+          <Image src="/logo.png" alt="AI-Act Lite" width={140} height={32} priority />
         </Link>
       </header>
 
-      {/* Seiteninhalt */}
       <Component {...pageProps} />
     </>
   );
