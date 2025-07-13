@@ -27,11 +27,11 @@ export default function RiskWizardForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RiskResult | null>(null);
 
-  // Basis-URL aus .env oder Fallback
   const apiBase =
     (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "") ||
     "https://ai-act-lite-api.onrender.com/api";
 
+  /* ── Prüfung ──────────────────────────────────────────────── */
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -58,7 +58,7 @@ export default function RiskWizardForm() {
     setLoading(false);
   }
 
-  // === UI ===
+  /* ── UI ────────────────────────────────────────────────────── */
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Checkbox-Fragen */}
@@ -98,16 +98,16 @@ export default function RiskWizardForm() {
         />
       </div>
 
-      {/* Submit-Button */}
+      {/* Submit */}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        className="w-full rounded bg-brand-400 px-4 py-2 font-medium text-white hover:bg-brand-500 disabled:opacity-50"
       >
         {loading ? "Überprüfung…" : "Risiko prüfen"}
       </button>
 
-      {/* Ergebnisbox & PDF-Button */}
+      {/* Ergebnis & PDF */}
       {result && (
         <div className="rounded border border-gray-200 bg-gray-50 p-4">
           <p className="mb-2 text-lg font-semibold">
@@ -165,7 +165,7 @@ export default function RiskWizardForm() {
               a.click();
               window.URL.revokeObjectURL(url);
             }}
-            className="mt-4 w-full rounded border border-blue-600 px-4 py-2 text-blue-600 hover:bg-blue-50"
+            className="mt-4 w-full rounded border border-brand-400 px-4 py-2 text-brand-400 hover:bg-brand-50"
           >
             PDF herunterladen
           </button>
