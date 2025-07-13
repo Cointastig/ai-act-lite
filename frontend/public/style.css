@@ -28,7 +28,7 @@ body{margin:0;background:var(--gray-50);color:var(--gray-700);-webkit-font-smoot
 .text-3xl{font-size:1.875rem;line-height:2.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}
 .text-sm{font-size:.875rem;line-height:1.25rem}
 .text-white{color:var(--white)}.text-gray-700{color:var(--gray-700)}
-.bg-white{background:var(--white)}
+.bg-white{background:var(--white)}.bg-gray-50{background:var(--gray-50)}
 .bg-brand-400{background:var(--brand-400)}.hover\:bg-brand-500:hover{background:var(--brand-500)}
 .border{border:1px solid var(--gray-300)}
 .disabled\:opacity-50:disabled{opacity:.5}
@@ -47,10 +47,9 @@ input[type=checkbox]{
   vertical-align:middle;
   cursor:pointer;
 }
-/* Hover-Effekt auf Label */
 label{cursor:pointer}label:hover{color:var(--brand-500)}
 
-/* ---------- Schaltflächen ---------- */
+/* ---------- Buttons ---------- */
 .btn{
   display:inline-block;
   background:var(--brand-400);
@@ -62,6 +61,20 @@ label{cursor:pointer}label:hover{color:var(--brand-500)}
   text-align:center;
 }
 .btn:hover{background:var(--brand-500)}
+
+/* ---------- Badges (Ampel) ---------- */
+.badge{
+  display:inline-flex;
+  align-items:center;
+  font-size:.75rem;
+  font-weight:600;
+  padding:.25rem .5rem;
+  border-radius:9999px;
+  color:#fff;
+}
+.badge-green{background:#16a34a}
+.badge-yellow{background:#eab308}
+.badge-red{background:#dc2626}
 
 /* ---------- Layout-Komponenten ---------- */
 header{background:var(--brand-400)}
@@ -81,6 +94,12 @@ header{background:var(--brand-400)}
 }
 .footer a{color:var(--brand-400);text-decoration:none}
 .footer a:hover{color:var(--brand-500);text-decoration:underline}
+.result-box{
+  border:1px solid var(--gray-300);
+  background:var(--gray-50);
+  border-radius:.5rem;
+  padding:1rem;
+}
 
 /* ---------- Responsive (<=640 px) ---------- */
 @media(max-width:640px){
