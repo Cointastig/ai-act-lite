@@ -3,27 +3,19 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 
-import "../styles/globals.css";   // lokale Tailwind-Direktiven (@tailwind …)
+import "../styles/globals.css";          // bindet das lokal gebaute Tailwind-CSS ein
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
-      {/* Head-Block: Manifest + Tailwind-CDN-Fallback */}
+      {/* Manifest – kann bleiben, verursacht keinen 404 mehr */}
       <Head>
-        {/* PWA-Manifest (404 verschwindet) */}
         <link rel="manifest" href="/manifest.json" />
-
-        {/* Tailwind 3.x – funktionierender CDN-Pfad */}
-        <link
-          href="https://unpkg.com/tailwindcss@3.4.4/dist/tailwind.min.css"
-          rel="stylesheet"
-        />
       </Head>
 
       {/* Brand-Header mit Logo */}
       <header className="bg-brand-400 px-6 py-3">
         <Link href="/" className="inline-block">
-          {/* Falls Next-Image Probleme macht, gern durch <img …> ersetzen */}
           <Image
             src="/logo.png"
             alt="AI-Act Lite"
