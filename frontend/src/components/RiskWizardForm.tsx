@@ -11,8 +11,8 @@ const questions = [
   "Beeinflusst es die Wähler im politischen Wahlkampf?",
   "Wird es bei Personalentscheidungen am Arbeitsplatz berücksichtigt?",
   "Wird die Kreditwürdigkeit oder das Versicherungsrisiko bewertet?",
-  "Erzeugt das System Bilder/Texte, die fälschlicherweise für authentisch gehalten werden könnten?",
-  "Erlauben Sie die Integration von Drittanbietern ohne menschliche Aufsicht?",
+  "Erzeugt das System Bilder/Texte, die als echt missverstanden werden könnten?",
+  "Erlauben Sie Integrationen von Drittanbietern ohne menschliche Aufsicht?",
   "Können falsche Empfehlungen die Sicherheit gefährden?",
   "Werden personenbezogene Daten ohne Einwilligung verarbeitet?",
   "Haben Sie die Trainingsdaten vollständig unter Kontrolle?",
@@ -25,9 +25,9 @@ export default function RiskWizardForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
 
-  const handleToggle = (idx: number) => {
+  const toggle = (i: number) => {
     const next = [...answers];
-    next[idx] = !next[idx];
+    next[i] = !next[i];
     setAnswers(next);
   };
 
@@ -35,15 +35,18 @@ export default function RiskWizardForm() {
     setLoading(true);
     setResult(null);
     try {
-      const res = await fetch("/api/risk-wizard", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          answers,
-          company_name: company,
-          contact_email: email,
-        }),
-      });
+      const res = await fetch(
+        "https://ai-act-lite-api.onrender.com/api/risk-wizard",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            answers,
+            company_name: company,
+            contact_email: email,
+          }),
+        }
+      );
       const json: Result = await res.json();
       setResult(json);
     } catch (e) {
@@ -53,8 +56,7 @@ export default function RiskWizardForm() {
     }
   };
 
-  /* Farbe für Ampel-Badge wählen */
-  const badgeClass =
+  const badge =
     result?.risk_class === "high"
       ? "badge badge-red"
       : result?.risk_class === "medium"
@@ -72,7 +74,7 @@ export default function RiskWizardForm() {
             <input
               type="checkbox"
               checked={answers[i]}
-              onChange={() => handleToggle(i)}
+              onChange={() => toggle(i)}
             />
             {q}
           </label>
@@ -84,7 +86,6 @@ export default function RiskWizardForm() {
         <label className="text-sm">Unternehmens­name</label>
         <input
           type="text"
-          className="mt-1 w-full"
           value={company}
           onChange={(e) => setCompany(e.target.value)}
         />
@@ -93,17 +94,15 @@ export default function RiskWizardForm() {
         <label className="text-sm">Kontakt-E-Mail</label>
         <input
           type="email"
-          className="mt-1 w-full"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
 
-      {/* Submit */}
       <button
         className="btn w-full disabled:opacity-50"
-        onClick={submit}
         disabled={loading}
+        onClick={submit}
       >
         {loading ? "Überprüfung…" : "Risiko prüfen"}
       </button>
@@ -112,7 +111,7 @@ export default function RiskWizardForm() {
       {result && (
         <div className="result-box mt-6">
           <p className="mb-2 flex items-center gap-2">
-            <span className={badgeClass}>{result.risk_class}</span>
+            <span className={badge}>{result.risk_class}</span>
             Risikoklasse&nbsp;<b>{result.risk_class}</b>
           </p>
           <ul className="list-disc pl-5 text-sm">
